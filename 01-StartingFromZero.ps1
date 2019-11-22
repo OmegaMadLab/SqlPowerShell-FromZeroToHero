@@ -198,14 +198,14 @@ switch ($a) {
 # Show disks
 Get-Disk
 
-# Get partitions for GPT disk
-$disk = Get-Disk | Where-Object PartitionStyle -eq "GPT"
+# Get partitions for first disk
+$disk = Get-Disk | Where-Object { $_.PartitionStyle -eq "MBR" -and $_.Size -gt 120GB }
 Get-Partition -disk $disk
 # less verbose
-Get-Disk | ? PartitionStyle -eq "GPT" | Get-Partition
+Get-Disk | ? { $_.PartitionStyle -eq "MBR" -and $_.Size -gt 120GB } | Get-Partition
 
 # Get info for partition C:
-Get-Disk | ? PartitionStyle -eq "GPT" | Get-Partition | ? DriveLetter -eq "C"
+Get-Disk | ? { $_.PartitionStyle -eq "MBR" -and $_.Size -gt 120GB } | Get-Partition | ? DriveLetter -eq "C"
 # Better approach :)
 Get-Partition -DriveLetter "C"
 # View all properties
@@ -217,7 +217,6 @@ Get-Partition -DriveLetter "C" | Format-Table "DriveLetter", "Size", "Operationa
 # Same as before, custom table
 Get-Partition -DriveLetter "C" | ft "DriveLetter", @{Name="SizeGB"; Expression={[math]::Round($_.Size/1GB, 1)}}, "OperationalStatus"
 # Same as before, external window - actually works on Windows PowerShell only; it'll be back on PowerShell 7
-# Same as before, custom table
 Get-Partition -DriveLetter "C" | Select "DriveLetter", @{Name="SizeGB"; Expression={[math]::Round($_.Size/1GB, 1)}}, "OperationalStatus" | Out-GridView
 
 #endregion

@@ -7,7 +7,7 @@ Remove-DbaAgDatabase -SqlInstance "DEMO-SQL-0" -Database "UserDatabase" -Availab
 Remove-DbaAgDatabase -SqlInstance "DEMO-SQL-0" -Database "UserDatabase2" -AvailabilityGroup "demo-sql-ag2" -Confirm:$false
 Remove-DbaAvailabilityGroup -SqlInstance "DEMO-SQL-0" -AvailabilityGroup "demo-sql-ag2" -Confirm:$false
 Remove-DbaDatabase -SqlInstance "DEMO-SQL-0", "DEMO-SQL-1" -Database "UserDatabase", "UserDatabase2" -Confirm:$false
-Get-DbaAgentJob -SqlInstance "DEMO-SQL-0", "DEMO-SQL-1" -ExcludeJob "ExampleBrokenBackup.Subplan_1", "syspolicy_purge_history" | Remove-DbaAgentJob
+Get-DbaAgentJob -SqlInstance "DEMO-SQL-0", "DEMO-SQL-0\NAMED", "DEMO-SQL-1" -ExcludeJob "ExampleBrokenBackup.Subplan_1", "syspolicy_purge_history" | Remove-DbaAgentJob
 Set-DbaMaxDop -SqlInstance "DEMO-SQL-0\NAMED" -MaxDop 0
 Set-DBAMaxMemory -SQLInstance "DEMO-SQL-0\NAMED"-Max 2147483647
 
