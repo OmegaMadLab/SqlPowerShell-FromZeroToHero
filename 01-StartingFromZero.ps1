@@ -51,13 +51,13 @@ $string.Length
 $null -eq $var
 
 $var = 5
-$var | Get-Member
+$var.GetType().FullName
 
 $var = "text"
-$var | Get-Member
+$var.GetType().FullName
 
 [int]$var = "5"
-$var.GetType()
+$var.GetType().FullName
 
 $var += 1
 $var
@@ -281,7 +281,7 @@ Format-Volume @params
 #region Import/Export to files
 
 # Execution transcript for logging purposes
-Start-Transcript -Path .\Transcript.txt
+Start-Transcript -Path .\Transcript.txt -Force -IncludeInvocationHeader -
 Write-Host "This is a test message"
 Get-ChildItem
 Write-Host "End"
@@ -345,12 +345,12 @@ $scriptBlock = {
     Write-Host "This code is executed on: $($env:COMPUTERNAME)"
 }
 
-Invoke-Command -ComputerName "demo-sql-0.contoso.local" `
+Invoke-Command -ComputerName "demo-sql-1.contoso.local" `
     -Scriptblock $scriptBlock `
     -Credential $credential
 
 # Open a persisten session on a remote system
-$psSession = New-PSSession -ComputerName "demo-sql-0.contoso.local" `
+$psSession = New-PSSession -ComputerName "demo-sql-1.contoso.local" `
                 -Credential $credential
 
 $scriptBlock1 = {
@@ -368,7 +368,7 @@ Invoke-Command -Session $psSession -ScriptBlock $scriptBlock2
 $psSession | Remove-PSSession
 
 # Open an interactive remote session
-Enter-PSSession -ComputerName "demo-sql-0.contoso.local" `
+Enter-PSSession -ComputerName "demo-sql-1.contoso.local" `
     -Credential $credential
 
 $env:COMPUTERNAME
