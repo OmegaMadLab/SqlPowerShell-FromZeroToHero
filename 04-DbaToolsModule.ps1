@@ -140,7 +140,7 @@ $sqlLogin = New-DbaLogin -Name "sqlLogin" -SqlInstance "DEMO-SQL-0\NAMED"
 $sqlLogin.GetType().FullName
 # Set sqlLogin as db_datareader on new database
 $dbUser = New-DbaDbUser -Database "UserDatabase" -SqlInstance "DEMO-SQL-0\NAMED" -Login $sqlLogin.Name
-Add-DbaDbRoleMember -Database "UserDatabase" -SqlInstance "DEMO-SQL-0\NAMED" -User $dbUser.Name -Role "db_datareader"
+Add-DbaDbRoleMember -Database "UserDatabase" -SqlInstance "DEMO-SQL-0\NAMED" -User $dbUser.Name -Role "db_datareader" -Confirm:$false
 
 # Test the new sql login and its role
 $sqlCred = Get-Credential
@@ -174,7 +174,7 @@ foreach($ag in $ags) {
 
 # Create a share on local DB folder
 $acl = Get-Acl "F:\DbaBackup"
-$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("CONTOSO\sqlsvc","FullControl","Allow")
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("CONTOSO\sqlsvc", "FullControl", "ContainerInherit, ObjectInherit", "None", "Allow")
 $acl.SetAccessRule($AccessRule)
 $acl | Set-Acl "F:\DbaBackup"
 New-SmbShare -Path "F:\DbaBackup" -Name "DBABackup" -FullAccess "EveryOne"
