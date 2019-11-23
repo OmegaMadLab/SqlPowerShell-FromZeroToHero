@@ -12,6 +12,13 @@ Get-DbaAgentJob -SqlInstance "DEMO-SQL-0", "DEMO-SQL-0\NAMED", "DEMO-SQL-1" -Exc
 Set-DbaMaxDop -SqlInstance "DEMO-SQL-0\NAMED" -MaxDop 0
 Set-DBAMaxMemory -SQLInstance "DEMO-SQL-0\NAMED"-Max 2147483647
 
+Remove-Item ".\dir.CSV" -Force
+Remove-Item ".\logins.sql" -Force
+Remove-Item ".\ScanResult.xlsx" -Force
+Remove-Item ".\*.txt" -Force
+Remove-Item ".\secedit.jfm" -Force
+Remove-Item ".\secedit.sdb" -Force
+
 $sqlNamedInst = Connect-DbaInstance -sqlInstance "DEMO-SQL-0\NAMED"
 $sqlNamedInst.Settings.LoginMode = [Microsoft.SqlServer.Management.SMO.ServerLoginMode]::Integrated
 # Make the changes
