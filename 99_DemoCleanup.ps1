@@ -1,6 +1,7 @@
 # Demo Environment cleanup script
 
-Remove-Item "F:\DbaBackup" -Force
+Remove-SmbShare -Name "DbaBackup" -Force
+Remove-Item "F:\DbaBackup" -Force -Recurse
 Remove-DbaDatabase -SqlInstance "DEMO-SQL-0\NAMED", "DEMO-SQL-0" -Database "DBAMaintenance", "UserDatabase" -Confirm:$false
 Remove-DbaLogin -SqlInstance "DEMO-SQL-0", "DEMO-SQL-1", "DEMO-SQL-0\NAMED" -Login "sqlLogin", "newSqlLogin", "RenamedLogin" -Confirm:$false
 Remove-DbaAgDatabase -SqlInstance "DEMO-SQL-0" -Database "UserDatabase" -AvailabilityGroup "demo-sql-ag" -Confirm:$false

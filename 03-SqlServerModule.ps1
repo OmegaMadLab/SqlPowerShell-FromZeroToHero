@@ -65,7 +65,6 @@ $vaScan | Export-SqlVulnerabilityAssessmentScan -FolderPath ".\ScanResult.xlsx"
 # Executing a sql assessment at different scopes
 Get-SqlInstance -ServerInstance DEMO-SQL-0 | Invoke-SqlAssessment
 Get-SqlDatabase -ServerInstance DEMO-SQL-0 | Invoke-SqlAssessment
-Get-SqlMaxMemory -SqlInstance DEMO-SQL-0
 
 # Getting SQL Agent Jobs informations
 Get-SqlAgentJob -ServerInstance DEMO-SQL-0

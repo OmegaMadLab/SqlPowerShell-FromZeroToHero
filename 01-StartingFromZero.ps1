@@ -3,10 +3,6 @@
 # Get list of available commands
 Get-Command
 
-# Alias
-Get-Command -Name dir
-Get-Alias
-
 # Get list of available commands for specific noun
 Get-Command -Noun DNS*
 
@@ -14,6 +10,10 @@ Get-Command -Noun DNS*
 Get-Help Set-DnsClient
 Get-Help Set-DnsClient -Examples
 Get-Help Set-DnsClient -Full
+
+# Alias
+Get-Command -Name dir
+Get-Alias
 
 # Get modules
 Get-Module # Online loaded
@@ -35,19 +35,6 @@ Update-Module Az
 #endregion
 
 #region Variables, arrays, objects
-# Strings
-$string = "This is a string"
-$string
-
-# A variable is an object with methods and properties
-$string | Get-Member
-
-$string.ToUpper()
-$string.ToLower()
-$string.Contains("This")
-$string.Contains("That")
-$string.Length
-
 $null -eq $var
 
 $var = 5
@@ -63,6 +50,19 @@ $var += 1
 $var
 $var++
 $var
+
+# Strings
+$string = "This is a string"
+
+# A variable is an object with methods and properties
+$string | Get-Member
+
+$string.ToUpper()
+$string.ToLower()
+$string.Contains("This")
+$string.Contains("That")
+$string.Length
+
 
 # Variable evaluation - double quote and single quote
 Write-Host 'My variable contains: $string'
@@ -281,7 +281,7 @@ Format-Volume @params
 #region Import/Export to files
 
 # Execution transcript for logging purposes
-Start-Transcript -Path .\Transcript.txt -Force -IncludeInvocationHeader -
+Start-Transcript -Path .\Transcript.txt -Force -IncludeInvocationHeader
 Write-Host "This is a test message"
 Get-ChildItem
 Write-Host "End"

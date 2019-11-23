@@ -63,7 +63,7 @@ Install-DbaInstance -SqlInstance "DEMO-SQL-0\NAMED" -Version 2017 -Path "C:\SQLS
 Get-DbaService "DEMO-SQL-0.contoso.local" -Instance "NAMED" -Type Engine, Agent | 
     Update-DbaServiceAccount -ServiceCredential (Get-Credential) 
 
-Set-DbaPrivilege -ComputerName "DEMO-SQL-0" -Type "IFI", "LPIM" -Verbose
+Set-DbaPrivilege -ComputerName "DEMO-SQL-0" -Type "IFI", "LPIM"
 Set-DbaMaxDop -SqlInstance "DEMO-SQL-0\NAMED" -MaxDop 1
 Set-DBAMaxMemory -SQLInstance "DEMO-SQL-0\NAMED" -Max $((Get-DbaMaxMemory -SQLInstance "DEMO-SQL-0").Total - 3072)
 # OR #
@@ -89,6 +89,28 @@ Install-DbaMaintenanceSolution -SqlInstance "DEMO-SQL-0\NAMED" `
     -CleanupTime 24 `
     -InstallJobs
 
+# Schedule full backup jobs
+$fullBackupJob = Get-DbaAgentJob -sqlInstance "DEMO-SQL-0\NAMED" -Category "Database Maintenance" | 
+                    Where-Object { $_.Name -like '*backup*full*' -and $_.JobSchedules.count -eq 0 } 
+$fullBackupJob
+
+Get-DbaAgentSchedule -SqlInstance "DEMO-SQL-0\NAMED"
+$schedule = New-DbaAgentSchedule -SqlInstance "DEMO-SQL-0\NAMED" `
+                -Schedule "Daily at midnight" `
+                -FrequencyType Daily `
+                -FrequencyInterval 24 `
+                -StartTime "000000" `
+                -Force
+
+$fullBackupJob | Set-DbaAgentJob -ScheduleId $schedule.ID
+
+Get-DbaAgentJob -sqlInstance "DEMO-SQL-0\NAMED" -Category "Database Maintenance" | 
+    Where-Object Name -like '*backup*full*' | Select-Object Name, JobSchedules
+
+# Massive backup example
+Backup-DbaDatabase -SqlInstance "DEMO-SQL-0\NAMED" -BackupDirectory "F:\DbaBackup" -CopyOnly
+
+
 # New user database and sql login
 $userDb = New-DbaDatabase -name "UserDatabase" -SqlInstance "DEMO-SQL-0\NAMED"
 # Create a table and add some sample data
@@ -112,8 +134,6 @@ New-DbaDbTable -SqlInstance "DEMO-SQL-0\NAMED" `
 $fileListTable = Get-ChildItem -File | select Name, Length | ConvertTo-DbaDataTable
 $fileListTable.GetType().FullName
 
-$fileListTable.Name.GetType()
-
 $fileListTable | Write-DbaDataTable -SqlInstance "DEMO-SQL-0\NAMED" -Database "UserDatabase" -Schema "dbo" -Table "filelist"
 
 $sqlLogin = New-DbaLogin -Name "sqlLogin" -SqlInstance "DEMO-SQL-0\NAMED"
@@ -134,27 +154,6 @@ Invoke-DbaQuery -SqlInstance "DEMO-SQL-0\NAMED" `
     -sqlCredential $sqlCred `
     -query "CREATE TABLE DemoTable (ID INT)"
 
-# Schedule full backup jobs
-$fullBackupJob = Get-DbaAgentJob -sqlInstance "DEMO-SQL-0\NAMED" -Category "Database Maintenance" | 
-                    Where-Object { $_.Name -like '*backup*full*' -and $_.JobSchedules.count -eq 0 } 
-$fullBackupJob
-
-Get-DbaAgentSchedule -SqlInstance "DEMO-SQL-0\NAMED"
-$schedule = New-DbaAgentSchedule -SqlInstance "DEMO-SQL-0\NAMED" `
-                -Schedule "Daily at midnight" `
-                -FrequencyType Daily `
-                -FrequencyInterval 24 `
-                -StartTime "000000" `
-                -Force
-
-$fullBackupJob | Set-DbaAgentJob -ScheduleId $schedule.ID
-
-Get-DbaAgentJob -sqlInstance "DEMO-SQL-0\NAMED" -Category "Database Maintenance" | 
-    Where-Object Name -like '*backup*full*' | Select-Object Name, JobSchedules
-
-# Massive backup example
-Backup-DbaDatabase -SqlInstance "DEMO-SQL-0\NAMED" -BackupDirectory "F:\DbaBackup" -CopyOnly
-
 # Migrate contents between instances
 Copy-DbaLogin -Source "DEMO-SQL-0\NAMED" -Destination "DEMO-SQL-0" -ExcludeSystemLogins
 Copy-DbaDatabase -Source "DEMO-SQL-0\NAMED" -Destination "DEMO-SQL-0" -BackupRestore -SharedPath "F:\DbaBackup" -AllDatabases
@@ -174,11 +173,11 @@ foreach($ag in $ags) {
 }
 
 # Create a share on local DB folder
-New-SmbShare -Path "F:\DbaBackup" -Name "DBABackup" -FullAccess "EveryOne"
 $acl = Get-Acl "F:\DbaBackup"
 $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("CONTOSO\sqlsvc","FullControl","Allow")
 $acl.SetAccessRule($AccessRule)
 $acl | Set-Acl "F:\DbaBackup"
+New-SmbShare -Path "F:\DbaBackup" -Name "DBABackup" -FullAccess "EveryOne"
 
 # Add UserDatabase to AG
 Add-DbaAgDatabase -SqlInstance "DEMO-SQL-0" `
