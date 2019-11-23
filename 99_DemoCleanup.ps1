@@ -18,4 +18,8 @@ $sqlNamedInst.Settings.LoginMode = [Microsoft.SqlServer.Management.SMO.ServerLog
 $sqlNamedInst.Alter()
 Restart-DbaService -ComputerName "DEMO-SQL-0" -Instance "NAMED"
 
+Remove-Item ".\dir.CSV" -Force
+Remove-Item ".\logins.sql" -Force
+Remove-Item ".\ScanResult.xlsx" -Force
+Remove-Item ".\*.txt" -Force
 # Remove IFI and LPIM privilege to sqlsvc
