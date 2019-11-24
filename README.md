@@ -3,7 +3,8 @@
 This repository contains the demo scripts I used during my "Zero to Hero" sessions on SQL Server and PowerShell.
 
 You can generate a demo environment like the one I used during the sessions by using *00_EnvironmentPreparation.ps1* script.
-This script generates a lab with a couple of AD domain controllers and a two-nodes Always On Availability Group cluster.
+This script generates a lab with a couple of AD domain controllers and a two-nodes Always On Availability Group cluster on your Azure Subscription. 
+If you don't have one, a [trial subscription](https://azure.microsoft.com/en-us/free/) with free credits will be more than enough for some tests!
 
 Just log yourself into one of the cluster nodes by using a domain controller as a bridge machine, and proceed over with the demo scripts.
 
