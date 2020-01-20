@@ -57,8 +57,7 @@ $vnet.DhcpOptions.DnsServers = $adVmIp
 
 $vnet | Set-AzVirtualNetwork
 
-#New-AzResourceGroupDeployment -TemplateUri https://raw.githubusercontent.com/OmegaMadLab/azure-quickstart-templates/master/301-sql-alwayson-md-ilb-zones/azuredeploy.json `
-New-AzResourceGroupDeployment -Templatefile C:\Gitrepos\azure-quickstart-templates\301-sql-alwayson-md-ilb-zones\azuredeploy.json `
+New-AzResourceGroupDeployment -TemplateUri https://raw.githubusercontent.com/OmegaMadLab/azure-quickstart-templates/master/301-sql-alwayson-md-ilb-zones/azuredeploy.json `
     -ResourceGroupName $rg.ResourceGroupName `
     -namePrefix "demo" `
     -location "westeurope" `
