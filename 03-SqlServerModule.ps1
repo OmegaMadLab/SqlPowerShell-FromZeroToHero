@@ -13,6 +13,8 @@ if(!(Get-Module -Name SqlServer -ListAvailable)) {
     Update-Module SqlServer
 }
 
+Import-Module SqlServer
+
 Start-Process -filepath "https://docs.microsoft.com/en-us/powershell/module/sqlserver/?view=sqlserver-ps" -WindowStyle Maximized
 
 # Get commands available in the module
@@ -24,6 +26,12 @@ Get-Command -Module SqlServer | Measure-Object
 Get-PSProvider
 Get-PsDrive
 
+dir HKCU:\
+dir Cert:\LocalMachine\My
+
+dir SQLSERVER:\
+dir SQLSERVER:\SQL
+dir SQLSERVER:\SQL\DEMO-SQL-0
 dir SQLSERVER:\SQL\DEMO-SQL-0\default
 
 # Managing logins with SQLSERVER provider
@@ -36,6 +44,20 @@ $logins
 $logins = Get-SqlLogin -ServerInstance DEMO-SQL-0
 $logins
 ($logins | select -first 1).GetType().FullName
+
+
+# multiline strings
+$hereString = @"
+This is a
+multiline string.
+In SQL context, it's really
+usefull to manage T-SQL text.
+Today is {0} {1}
+"@
+
+$hereString
+$hereString.Replace("{0}", (Get-Date).DayOfWeek)
+$hereString -f (Get-Date).DayOfWeek, (Get-Date).Day
 
 # Execute T-SQL in a sqlcmd-like way
 $query = @"  
@@ -55,6 +77,16 @@ FROM sys.databases
 "@
 
 (Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Database MASTER -Query $query).QueryText | % { Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Query $_ }
+
+# Same as before, PowerShell-like approach
+$query = @"
+USE QUOTENAME({0}); 
+SELECT  DB_NAME(), 
+        Name 
+FROM sys.tables
+"@
+
+Get-ChildItem SQLSERVER:\SQL\DEMO-SQL-0\default\Databases -Depth 2
 
 # Executing a vulnerability assessment at database level
 $vaScan = Invoke-SqlVulnerabilityAssessmentScan -ServerInstance DEMO-SQL-0 -DatabaseName Master -ScanId MyVaScan
