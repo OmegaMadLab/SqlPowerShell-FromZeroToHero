@@ -63,7 +63,7 @@ Install-DbaInstance -SqlInstance "DEMO-SQL-0\NAMED" -Version 2017 -Path "C:\SQLS
 Get-DbaService "DEMO-SQL-0.contoso.local" -Instance "NAMED" -Type Engine, Agent | 
     Update-DbaServiceAccount -ServiceCredential (Get-Credential) 
 
-Set-DbaPrivilege -ComputerName "DEMO-SQL-0" -Type "IFI", "LPIM"
+Set-DbaPrivilege -ComputerName "DEMO-SQL-0\NAMED" -Type "IFI", "LPIM"
 Set-DbaMaxDop -SqlInstance "DEMO-SQL-0\NAMED" -MaxDop 1
 Set-DBAMaxMemory -SQLInstance "DEMO-SQL-0\NAMED" -Max $((Get-DbaMaxMemory -SQLInstance "DEMO-SQL-0").Total - 3072)
 # OR #
