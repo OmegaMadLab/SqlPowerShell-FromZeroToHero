@@ -49,7 +49,47 @@ FROM    sys.databases
 
 Invoke-DbaQuery -sqlInstance "DEMO-SQL-0", "DEMO-SQL-1" -Query $query
 
-# Instance setup 
+# Best practice assessment
+$instances = @()
+$instances += "DEMO-SQL-0"
+$instances += "DEMO-SQL-1"
+
+Get-DbaPrivilege -ComputerName $instances
+Test-DbaMaxDop -SqlInstance $instances
+Test-DbaMaxMemory -SqlInstance $instances
+
+function Get-InstanceBestPracticesStatus {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [string[]]$sqlInstance,
+
+        [Parameter(Mandatory=$false)]
+        [string]$logFilePath = ".\BestPracticesStatus.txt"
+    )
+
+    "Best practices summary" | Out-File $logFilePath -Force
+
+    $instances | % {
+        try {
+           Get-DbaPrivilege -ComputerName $_ -EnableException | Out-File $logFilePath -Append
+           Test-DbaMaxDop -SqlInstance $_ -EnableException | Out-File $logFilePath -Append
+           Test-DbaMaxMemory -SqlInstance $_ -EnableException | Out-File $logFilePath -Append
+        }
+        catch {
+            Write-Output "Error while assessing instance $_" | Out-File $logFilePath -Append
+        }
+    }
+}
+
+$instances += "NONEXISTINGSQL"
+$instances | Get-InstanceBestPracticesStatus
+code .\BestPracticesStatus.txt
+
+# Instance setup and configuration
+
+# Keep track of all command executed
+Start-Transcript -Path .\Transcript.txt -Force -IncludeInvocationHeader
 $config = @{
     AGTSVCSTARTUPTYPE     = "Automatic"
     SQLCOLLATION          = "Latin1_General_CI_AS"
@@ -68,6 +108,10 @@ Set-DbaMaxDop -SqlInstance "DEMO-SQL-0\NAMED" -MaxDop 1
 Set-DBAMaxMemory -SQLInstance "DEMO-SQL-0\NAMED" -Max $((Get-DbaMaxMemory -SQLInstance "DEMO-SQL-0").Total - 3072)
 # OR #
 Set-DBAMaxMemory -SQLInstance "DEMO-SQL-0\NAMED" -Max (Test-DbaMaxMemory -SqlInstance "DEMO-SQL-0").RecommendedValue
+
+# Close transcript
+Stop-Transcript
+code .\transcript.txt
 
 # Enable SQL Auth - using SMO
 $sqlNamedInst = Connect-DbaInstance -sqlInstance "DEMO-SQL-0\NAMED"
@@ -110,9 +154,9 @@ Get-DbaAgentJob -sqlInstance "DEMO-SQL-0\NAMED" -Category "Database Maintenance"
 # Massive backup example
 Backup-DbaDatabase -SqlInstance "DEMO-SQL-0\NAMED" -BackupDirectory "F:\DbaBackup" -CopyOnly
 
-
 # New user database and sql login
 $userDb = New-DbaDatabase -name "UserDatabase" -SqlInstance "DEMO-SQL-0\NAMED"
+
 # Create a table and add some sample data
 $col1 = @{
     Name        = 'filename'
@@ -143,7 +187,13 @@ $dbUser = New-DbaDbUser -Database "UserDatabase" -SqlInstance "DEMO-SQL-0\NAMED"
 Add-DbaDbRoleMember -Database "UserDatabase" -SqlInstance "DEMO-SQL-0\NAMED" -User $dbUser.Name -Role "db_datareader" -Confirm:$false
 
 # Test the new sql login and its role
+# Get sql login credential
 $sqlCred = Get-Credential
+# or
+$sqlCred = New-Object System.Management.Automation.PSCredential ('sqlLogin', (ConvertTo-SecureString "PassW0rd.123" -AsPlainText -Force))
+
+$sqlCred
+
 Invoke-DbaQuery -SqlInstance "DEMO-SQL-0\NAMED" `
     -Database "userdatabase" `
     -sqlCredential $sqlCred `
@@ -155,6 +205,11 @@ Invoke-DbaQuery -SqlInstance "DEMO-SQL-0\NAMED" `
     -query "CREATE TABLE DemoTable (ID INT)"
 
 # Migrate contents between instances
+# Source is DEMO-SQL-0\Named
+# Items will be copied to DEMO-SQL-0
+# DBs will be joined to Always On AGs
+# Items will be synched between replicas
+
 Copy-DbaLogin -Source "DEMO-SQL-0\NAMED" -Destination "DEMO-SQL-0" -ExcludeSystemLogins
 Copy-DbaDatabase -Source "DEMO-SQL-0\NAMED" -Destination "DEMO-SQL-0" -BackupRestore -SharedPath "F:\DbaBackup" -AllDatabases
 Copy-DbaAgentJobCategory -Source "DEMO-SQL-0\NAMED" -Destination "DEMO-SQL-0"

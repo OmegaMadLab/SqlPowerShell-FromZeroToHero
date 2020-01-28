@@ -80,19 +80,51 @@ FROM sys.databases
 
 # Same as before, PowerShell-like approach
 $query = @"
-USE QUOTENAME({0}); 
+USE [{0}]; 
 SELECT  DB_NAME(), 
         Name 
 FROM sys.tables
 "@
 
-Get-ChildItem SQLSERVER:\SQL\DEMO-SQL-0\default\Databases -Depth 2
+$databases = Get-ChildItem SQLSERVER:\SQL\DEMO-SQL-0\named\databases -Force
+foreach ($db in $databases) {
+    Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Query $($query -f $db.Name)
+}
 
-# Executing a vulnerability assessment at database level
-$vaScan = Invoke-SqlVulnerabilityAssessmentScan -ServerInstance DEMO-SQL-0 -DatabaseName Master -ScanId MyVaScan
+# Or
+$query = @"
+SELECT  DB_NAME(), 
+        Name 
+FROM sys.tables
+"@
+
+Get-SqlDatabase -ServerInstance DEMO-SQL-0 | %  { Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Database $_.Name -Query $query }
+
+# Executing a vulnerability assessment at database level + command formatting with backtick
+$vaScan = Invoke-SqlVulnerabilityAssessmentScan -ServerInstance DEMO-SQL-0 `
+            -DatabaseName Master `
+            -ScanId MyVaScan
 $vaScan
 
+# Command formatting alternative - splatting
+$params = @{
+    ServerInstance  = "DEMO-SQL-0"
+    DatabaseName    = "master"
+    ScanId          = "MyVaScan" 
+}
+$vaScan = Invoke-SqlVulnerabilityAssessmentScan @params
+
 $vaScan | Export-SqlVulnerabilityAssessmentScan -FolderPath ".\ScanResult.xlsx"
+
+# splatting
+$params = @{
+    DriveLetter = "K"
+    FileSystem = "NTFS"
+    NewFileSystemLabel = "TestVolume"
+    AllocationUnitSize = 64KB
+    Force = $true
+}
+Format-Volume @params
 
 # Executing a sql assessment at different scopes
 Get-SqlInstance -ServerInstance DEMO-SQL-0 | Invoke-SqlAssessment
@@ -102,12 +134,13 @@ Get-SqlDatabase -ServerInstance DEMO-SQL-0 | Invoke-SqlAssessment
 Get-SqlAgentJob -ServerInstance DEMO-SQL-0
 
 $job = Get-SqlAgentJob -ServerInstance DEMO-SQL-0 | ? Name -like '*backup*'
+$job.Start()
+
 Get-SqlAgentJobHistory -ServerInstance DEMO-SQL-0 -JobID $job.JobID
 
 # Exploring ERRORLOG
 Get-SqlErrorLog -ServerInstance DEMO-SQL-0 -Since Yesterday 
 Get-SqlErrorLog -ServerInstance DEMO-SQL-0 -Since Yesterday | ? Text -like 'ERROR:*'
 Get-SqlErrorLog -ServerInstance DEMO-SQL-0 -Since Yesterday | ? Source -eq "Backup"
-
 
 #endregion
