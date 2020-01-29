@@ -90,6 +90,7 @@ code .\BestPracticesStatus.txt
 
 # Keep track of all command executed
 Start-Transcript -Path .\Transcript.txt -Force -IncludeInvocationHeader
+
 $config = @{
     AGTSVCSTARTUPTYPE     = "Automatic"
     SQLCOLLATION          = "Latin1_General_CI_AS"

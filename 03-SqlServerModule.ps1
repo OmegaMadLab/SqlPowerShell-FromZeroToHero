@@ -45,7 +45,6 @@ $logins = Get-SqlLogin -ServerInstance DEMO-SQL-0
 $logins
 ($logins | select -first 1).GetType().FullName
 
-
 # multiline strings
 $hereString = @"
 This is a
@@ -115,16 +114,6 @@ $params = @{
 $vaScan = Invoke-SqlVulnerabilityAssessmentScan @params
 
 $vaScan | Export-SqlVulnerabilityAssessmentScan -FolderPath ".\ScanResult.xlsx"
-
-# splatting
-$params = @{
-    DriveLetter = "K"
-    FileSystem = "NTFS"
-    NewFileSystemLabel = "TestVolume"
-    AllocationUnitSize = 64KB
-    Force = $true
-}
-Format-Volume @params
 
 # Executing a sql assessment at different scopes
 Get-SqlInstance -ServerInstance DEMO-SQL-0 | Invoke-SqlAssessment

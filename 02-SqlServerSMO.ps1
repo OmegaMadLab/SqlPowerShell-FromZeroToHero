@@ -69,18 +69,11 @@ $var.GetType().FullName
 $var = "text"
 $var.GetType().FullName
 
-[int]$var = "5"
-$var.GetType().FullName
-
-$var += 1
-$var
-$var++
-$var
-
 # Connect to SQL instances on DEMO-SQL-0 and explore properties and methods
 $sqlServer = New-Object Microsoft.SqlServer.Management.Smo.Server -ArgumentList 'demo-sql-0'
 
 Get-Member -InputObject $sqlServer
+$sqlServer | Get-Member
 
 $sqlServer.GetSqlServerVersionName()
 $sqlServer.EngineEdition
@@ -88,16 +81,15 @@ $sqlServer.EngineEdition
 # Collection of objects
 $sqlServer.Databases
 
-# Different kind of visualization
-$sqlServer.Databases | Format-List
+# Different kind of visualization + Piping
+$sqlServer.Databases | Format-List -Property *
 $sqlServer.Databases | Format-List Name, CompatibilityLevel, Size
 $sqlServer.Databases | Format-Table Name, CompatibilityLevel, Size
 $sqlServer.Databases | Format-Table Name, CompatibilityLevel, @{Name="SizeKB"; Expression={[math]::Round($_.Size*1KB, 1)}}
 
-# Pick only some elements of the collection
+# Pick only some elements of the collection - similar to an array
 $sqlServer.Databases[0]
 $sqlServer.Databases | Sort-Object Name | Select-object -First 2
-
 
 <# 
 Filtering
@@ -125,9 +117,6 @@ comparison operators https://docs.microsoft.com/en-us/powershell/module/microsof
 #>
 $sqlServer.Databases | Where-Object Name -Like 'ma*'
 $sqlServer.Databases | ? CompatibilityLevel -gt 130
-
-# Strings
-$string = "This is a string"
 
 # Variable evaluation - double quote and single quote
 Write-Host 'My variable contains: $string'
@@ -164,6 +153,6 @@ $sqlServer.Logins | ? Name -eq renamedLogin
 
 # Script the logins
 $sqlServer.logins | % { $_.Script() } | Out-File .\logins.sql
-notepad .\logins.sql
+code .\logins.sql
 
 #endregion
