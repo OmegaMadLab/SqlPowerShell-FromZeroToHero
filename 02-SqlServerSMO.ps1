@@ -85,7 +85,8 @@ $sqlServer.Databases
 $sqlServer.Databases | Format-List -Property *
 $sqlServer.Databases | Format-List Name, CompatibilityLevel, Size
 $sqlServer.Databases | Format-Table Name, CompatibilityLevel, Size
-$sqlServer.Databases | Format-Table Name, CompatibilityLevel, @{Name="SizeKB"; Expression={[math]::Round($_.Size*1KB, 1)}}
+$sqlServer.Databases | 
+    Format-Table Name, CompatibilityLevel, @{Name="SizeKB"; Expression={[math]::Round($_.Size*1KB, 1)}}
 
 # Pick only some elements of the collection - similar to an array
 $sqlServer.Databases[0]
@@ -119,6 +120,8 @@ $sqlServer.Databases | Where-Object Name -Like 'ma*'
 $sqlServer.Databases | ? CompatibilityLevel -gt 130
 
 # Variable evaluation - double quote and single quote
+$string = "This is a string"
+
 Write-Host 'My variable contains: $string'
 Write-Host "My variable contains: $string"
 Write-Host "My string contains $($string.Length) chars"
@@ -126,11 +129,11 @@ Write-Host "My string contains $($string.Length) chars"
 Write-Host "My instance contains these DBs: $($sqlServer.Databases -join ',')"
 
 foreach ($database in $sqlServer.Databases) {
-    Write-Host "Collation for database $($database.Name) is $($database.Collation). Compatibility level is $($database.CompatibilityLevel)."
+    Write-Host "Collation for database $($database.Name) is $($database.Collation)."
 }
 
 $sqlServer.Databases | ForEach-Object {
-    Write-Host "Collation for database $($_.Name) is $($_.Collation). Compatibility level is $($_.CompatibilityLevel)."
+    Write-Host "Collation for database $($_.Name) is $($_.Collation)."
 }
 
 # Create a new SQL login
