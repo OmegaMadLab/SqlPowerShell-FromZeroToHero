@@ -3,7 +3,7 @@
 # SQL Server Management Objects (SMO) is a collection of objects that are designed for programming all aspects of managing Microsoft SQL Server
 # https://docs.microsoft.com/it-it/sql/relational-databases/server-management-objects-smo/sql-server-management-objects-smo-programming-guide?view=sql-server-ver15
 
-#region library loading script 
+#  
 # Loads the SQL Server Management Objects (SMO) - old school version.
 # You can also load them by loading SqlServer PowerShell module
 #  
@@ -57,77 +57,12 @@ Set-Location "$sqlpsPath\..\PowerShell\Modules\SQLPS"
 update-FormatData -prependpath SQLProvider.Format.ps1xml   
 Pop-Location
 
-#endregion
-
-# Variables, arrays, objects
-$null -eq $var
-
-$var = 5
-Get-Member -InputObject $var
-$var.GetType().FullName
-
-$var = "text"
-$var.GetType().FullName
-
 # Connect to SQL instances on DEMO-SQL-0 and explore properties and methods
 $sqlServer = New-Object Microsoft.SqlServer.Management.Smo.Server -ArgumentList 'demo-sql-0'
 
-Get-Member -InputObject $sqlServer
-$sqlServer | Get-Member
-
 $sqlServer.GetSqlServerVersionName()
 $sqlServer.EngineEdition
-
-# Collection of objects
 $sqlServer.Databases
-
-# Different kind of visualization + Piping
-$sqlServer.Databases | Format-List -Property *
-$sqlServer.Databases | Format-List Name, CompatibilityLevel, Size
-$sqlServer.Databases | Format-Table Name, CompatibilityLevel, Size
-$sqlServer.Databases | Format-Table Name, CompatibilityLevel, @{Name="SizeKB"; Expression={[math]::Round($_.Size*1KB, 1)}}
-
-# Pick only some elements of the collection - similar to an array
-$sqlServer.Databases[0]
-$sqlServer.Databases | Sort-Object Name | Select-object -First 2
-
-<# 
-Filtering
-
-comparison operators https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_comparison_operators?view=powershell-6
-
--eq --> equal
--ne --> not equal
--gt --> greater than
--ge --> equal or greater than
--lt --> less than
--le --> equal or less than
--contains
--notcontains
--match
--notmatch
--like
--notlike
--is
--isnot
--in
--notin
--replace
-
-#>
-$sqlServer.Databases | Where-Object Name -Like 'ma*'
-$sqlServer.Databases | ? CompatibilityLevel -gt 130
-
-# Variable evaluation - double quote and single quote
-Write-Host 'My variable contains: $string'
-Write-Host "My variable contains: $string"
-Write-Host "My string contains $($string.Length) chars"
-
-Write-Host "My instance contains these DBs: $($sqlServer.Databases -join ',')"
-
-foreach ($database in $sqlServer.Databases) {
-    Write-Host "Collation for database $($database.Name) is $($database.Collation). Compatibility level is $($database.CompatibilityLevel)."
-}
 
 $sqlServer.Databases | ForEach-Object {
     Write-Host "Collation for database $($_.Name) is $($_.Collation). Compatibility level is $($_.CompatibilityLevel)."
@@ -153,6 +88,6 @@ $sqlServer.Logins | ? Name -eq renamedLogin
 
 # Script the logins
 $sqlServer.logins | % { $_.Script() } | Out-File .\logins.sql
-code .\logins.sql
+notepad .\logins.sql
 
 #endregion
