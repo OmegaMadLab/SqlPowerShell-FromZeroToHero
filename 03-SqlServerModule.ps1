@@ -15,7 +15,8 @@ if(!(Get-Module -Name SqlServer -ListAvailable)) {
 
 Import-Module SqlServer
 
-Start-Process -filepath "https://docs.microsoft.com/en-us/powershell/module/sqlserver/?view=sqlserver-ps" -WindowStyle Maximized
+Start-Process -filepath "https://docs.microsoft.com/en-us/powershell/module/sqlserver/?view=sqlserver-ps" `
+    -WindowStyle Maximized
 
 # Get commands available in the module
 Get-Command -Module SqlServer
@@ -75,7 +76,8 @@ SELECT 'USE ' +
 FROM sys.databases
 "@
 
-(Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Database MASTER -Query $query).QueryText | % { Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Query $_ }
+(Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Database MASTER -Query $query).QueryText | 
+    % { Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Query $_ }
 
 # Same as before, PowerShell-like approach
 $query = @"
@@ -85,7 +87,7 @@ SELECT  DB_NAME(),
 FROM sys.tables
 "@
 
-$databases = Get-ChildItem SQLSERVER:\SQL\DEMO-SQL-0\named\databases -Force
+$databases = Get-ChildItem SQLSERVER:\SQL\DEMO-SQL-0\default\databases -Force
 foreach ($db in $databases) {
     Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Query $($query -f $db.Name)
 }
@@ -97,7 +99,8 @@ SELECT  DB_NAME(),
 FROM sys.tables
 "@
 
-Get-SqlDatabase -ServerInstance DEMO-SQL-0 | %  { Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Database $_.Name -Query $query }
+Get-SqlDatabase -ServerInstance DEMO-SQL-0 | 
+    %  { Invoke-Sqlcmd -ServerInstance DEMO-SQL-0 -Database $_.Name -Query $query }
 
 # Executing a vulnerability assessment at database level + command formatting with backtick
 $vaScan = Invoke-SqlVulnerabilityAssessmentScan -ServerInstance DEMO-SQL-0 `
